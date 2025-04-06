@@ -52,10 +52,11 @@ st.title("🤖 AI Snake Game")
 init_db()
 
 # --- Sidebar Controls ---
-# 🎯 LEVEL
-difficulty = st.sidebar.selectbox("🎯 LEVEL ", ["Easy", "Medium", "Hard"])
+# 🎯 Level
+level = st.sidebar.selectbox("🎯 Level", ["Easy", "Medium", "Hard"])
 speed_map = {"Easy": 0.3, "Medium": 0.2, "Hard": 0.1}
-game_speed = speed_map[LEVEL]
+game_speed = speed_map[level]
+
 
 # 🌈 Theme
 theme = st.sidebar.radio("🌗 Theme", ["Dark", "Light"])
