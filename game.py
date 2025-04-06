@@ -51,9 +51,10 @@ if 'game_paused' not in st.session_state:
     st.session_state.game_paused = False
 
 # --- Sidebar Controls ---
-difficulty = st.sidebar.selectbox("🎯 Difficulty", ["Easy", "Medium", "Hard"])
+# 🎯 Level
+level = st.sidebar.selectbox("🎯 Level", ["Easy", "Medium", "Hard"])
 speed_map = {"Easy": 0.3, "Medium": 0.2, "Hard": 0.1}
-game_speed = speed_map[difficulty]
+game_speed = speed_map[level]
 
 theme = st.sidebar.radio("🌗 Theme", ["Dark", "Light"])
 BG = "⬛" if theme == "Dark" else "⬜"
@@ -63,7 +64,7 @@ if not st.session_state.game_started:
     if st.sidebar.button("▶️ Start Game"):
         st.session_state.game_started = True
         st.session_state.game_paused = False
-        st.experimental_rerun()
+        st.rerun()
 else:
     if not st.session_state.game_paused:
         if st.sidebar.button("⏸️ Pause Game"):
