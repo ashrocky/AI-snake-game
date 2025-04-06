@@ -236,7 +236,7 @@ with st.sidebar.expander("🔐 Admin Login"):
         if st.button("🔁 Restart Fresh Game"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
-            st.experimental_rerun()
+            st.rerun()
 
         if st.button("🗑️ Clear All Leaderboard Scores"):
             clear_leaderboard()
@@ -248,7 +248,7 @@ with st.sidebar.expander("⚙️ Admin Tools"):
     if st.button("🔁 Restart Fresh Game"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🗑️ Clear All Leaderboard Scores"):
         clear_leaderboard()
