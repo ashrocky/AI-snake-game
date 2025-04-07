@@ -5,6 +5,7 @@ import sqlite3
 import pandas as pd
 
 # DB Functions
+
 def init_db():
     conn = sqlite3.connect("snake_leaderboard.db")
     cursor = conn.cursor()
@@ -13,6 +14,13 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             score INTEGER
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS player_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            entry_time TEXT
         )
     """)
     conn.commit()
@@ -43,6 +51,15 @@ def get_score_data():
 st.set_page_config(page_title="AI Snake Game", layout="centered")
 st.title("🤖 AI Snake Game")
 init_db()
+
+from datetime import datetime
+
+def log_player_entry(name):
+    conn = sqlite3.connect("snake_leaderboard.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO player_log (name, entry_time) VALUES (?, ?)", (name, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    conn.commit()
+    conn.close()
 
 # Game control state
 if 'game_started' not in st.session_state:
@@ -188,25 +205,17 @@ if st.session_state.game_over:
     if st.sidebar.button("💾 Save Score"):
         if name:
             insert_score(name, st.session_state.score)
+            log_player_entry(name)  # 👈 ADD THIS LINE HERE
             st.sidebar.success("✅ Score saved!")
         else:
             st.sidebar.warning("Please enter your name.")
 
-    if st.sidebar.button("🔁 Restart Game"):
-        st.session_state.update({
-            "snake": [[10, 10]],
-            "food": [random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1)],
-            "direction": "RIGHT",
-            "score": 0,
-            "game_over": False
-        })
-        st.rerun()
 else:
     if st.session_state.game_started and not st.session_state.game_paused:
         time.sleep(game_speed)
         st.rerun()
 
-if st.sidebar.button("🔁 Restart Fresh Game"):
+if st.sidebar.button("🔁 Fresh Game"):
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
@@ -228,6 +237,17 @@ if st.sidebar.button("🗑️ Clear All Scores"):
     clear_leaderboard()
     st.sidebar.success("✅ Leaderboard cleared!")
 
+# 📜 Recent Player Entries
+st.subheader("🧑‍🎮 Recent Players")
+conn = sqlite3.connect("snake_leaderboard.db")
+df_log = pd.read_sql_query("SELECT name, entry_time FROM player_log ORDER BY entry_time DESC LIMIT 5", conn)
+conn.close()
+if not df_log.empty:
+    st.table(df_log)
+else:
+    st.info("No player entries yet.")
+
+
 # -- Sidebar: Admin Access --
 with st.sidebar.expander("🔐 Admin Login"):
     admin_pass = st.text_input("Enter Admin Password", type="password")
@@ -244,13 +264,3 @@ with st.sidebar.expander("🔐 Admin Login"):
             st.success("✅ Leaderboard cleared!")
     elif admin_pass:
         st.error("❌ Incorrect Password")
-
-with st.sidebar.expander("⚙️ Admin Tools"):
-    if st.button("🔁 Restart Fresh Game"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-    if st.button("🗑️ Clear All Leaderboard Scores"):
-        clear_leaderboard()
-        st.success("✅ All scores deleted!")
